@@ -41,7 +41,7 @@ re = 0.0 #rewiring fraction
 print("**** Rewiring Fraction***** ", re)
 pr = 0.87 #retaining existing link
 pb = 0.7 #breaking existing link
-pm = 0.93 #making new link when both coop
+pm = 0.93 #making new link when both cooperate
 pe = 0.3 #making new link when one cooperates
 ps = 0.2 #making new link when neither cooperate
 
