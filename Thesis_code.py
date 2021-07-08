@@ -15,7 +15,7 @@ from scipy import stats
 rnd = np.random
 
 
-def gini(array):
+def gini(array): #function to calculate Gini coefficient of an array 
     if np.amin(array) < 0:
         array -= np.amin(array) #values cannot be negative
     array += 0.0000001 #values cannot be 0
@@ -26,64 +26,64 @@ def gini(array):
 
 
 r = 2 #synergy factor
-p0 = 0.73 #environmental influence
-lamb = 0.001 #influence of wealth
+p0 = 0.73 #influence of strategy environment,different values tested
+lamb = 0.001 #influence of wealth environment(λ), lamb=0 corresponds to the invisible wealth scenario
 b = 0.1 #bias term
-pc_frac = 0.0 #fraction of punishers
-print("**** Punisher Fraction***** ", pc_frac)
+pc_frac = 0.0 #fraction of punishers,different values tested
+print("****Fraction of Punishers***** ", pc_frac)
 print("*******p0******", p0)
 print("*****lambda*****", lamb)
-pun_cost = 10 #cost of punishment
-pun_fine = 100 #punishment fine
-nrounds = 50 #number of rounds
+pun_cost = 10 #cost of punishment to punisher
+pun_fine = 100 #punishment fine suffered by punished player
+nrounds = 50 #number of rounds of the game
 
-re = 0.0 #rewiring fraction
+re = 0.3 #rewiring fraction, re=0 corresponds to a static network
 print("**** Rewiring Fraction***** ", re)
-pr = 0.87 #retaining existing link
-pb = 0.7 #breaking existing link
-pm = 0.93 #making new link when both cooperate
-pe = 0.3 #making new link when one cooperates
-ps = 0.2 #making new link when neither cooperate
+pr = 0.87 #probability of retaining existing link with cooperator
+pb = 0.7 #probability of breaking existing link with defector
+pm = 0.93 #probability of making new link when both cooperate
+pe = 0.3 #probability of making new link when one cooperates
+ps = 0.2 #probability of making new link when neither cooperate
 
 
-sumwealth = np.empty(100)
+sumwealth = np.empty(100) #variable 'sumwealth' initialized with empty array
 
-def_errors = 0
-coop_errors = 0
+def_errors = 0 
+coop_errors = 0 #these variables are later used to track whether and how many times individual wealths drop below zero.Initialized with value = 0. 
 
-c_envlist = np.zeros([(nrounds-1),100])
-s_envlist = np.zeros([(nrounds-1),100])
-n_envlist = np.zeros([(nrounds-1),100])
+c_envlist = np.zeros([(nrounds-1),100])#array later stores number of cooperative environments in each round of each trial. Initialized with zeros.
+s_envlist = np.zeros([(nrounds-1),100])#array later stores number of selfish environments in each round of each trial. Initialized with zeros.
+n_envlist = np.zeros([(nrounds-1),100])#array later stores number of neutral environments in each round of each trial. Initialized with zeros.
 
-r_cooplist = np.zeros([nrounds,100])
-p_cooplist = np.zeros([nrounds,100])
-r_deflist = np.zeros([nrounds,100])
-p_deflist = np.zeros([nrounds,100])
+r_cooplist = np.zeros([nrounds,100])#array later stores number of rich cooperators in each round of each trial. Initialized with zeros.
+p_cooplist = np.zeros([nrounds,100])#array later stores number of poor cooperators in each round of each trial. Initialized with zeros.
+r_deflist = np.zeros([nrounds,100])#array later stores number of rich defectors in each round of each trial. Initialized with zeros.
+p_deflist = np.zeros([nrounds,100])#array later stores number of poor defectors in each round of each trial. Initialized with zeros.
 
-deg_coop = np.zeros([nrounds,100])
-deg_def = np.zeros([nrounds,100])
+deg_coop = np.zeros([nrounds,100])#array later stores average degree of cooperators in each round of each trial. Initialized with zeros.
+deg_def = np.zeros([nrounds,100])#array later stores average degree of defectors in each round of each trial. Initialized with zeros.
 
-deg_coop_prev = np.zeros([(nrounds-1),100])
-deg_def_prev = np.zeros([(nrounds-1),100])
+deg_coop_prev = np.zeros([(nrounds-1),100])#array later stores average degree of cooperators from the previous round, in each round of each trial. Initialized with zeros.
+deg_def_prev = np.zeros([(nrounds-1),100])#array later stores average degree of defectors from the previous round, in each round of each trial. Initialized with zeros.
 
-gini_list = np.empty([(nrounds+1),100])
+gini_list = np.empty([(nrounds+1),100])#array later stores Gini coefficient of the population, in each round of each trial. 
 
-coop_neighbourlist = np.zeros([nrounds,100])
-def_neighbourlist = np.zeros([nrounds,100])
+coop_neighbourlist = np.zeros([nrounds,100])#array later stores average number of cooperators neighbours, in each round of each trial. Initialized with zeros.
+def_neighbourlist = np.zeros([nrounds,100])#array later stores average number of defector neighbours, in each round of each trial. Initialized with zeros.
 
-pcdifflist = []
+pcdifflist = []#the following empty lists later store the values of tanh(λΔw) for different categories of players classed by wealth and strategy
 rcdifflist = []
 pddifflist = []
 rddifflist = []
 
-gincof = np.empty(100)
-coop_num = np.empty(100)
+gincof = np.empty(100)#array later stores final Gini coefficient of population for each trial
+coop_num = np.empty(100)#array later stores final fraction of cooperators in the population for each trial
 
-error_count=0
-initgini = 0
+error_count=0#later counts the number of times individual wealths drop below zero. Initialized with a value of 0.
+initgini = 0#later used to display the average value of the initial Gini of the population across 100 trials
 
 
-avg_stratlist = []
+avg_stratlist = []#all these empty lists and arrays are later used to construct scatterplots between the number of times defected and change in wealth/final degree
 final_wealthlist = []
 colour_list = []
 deglist_small = np.empty(50)
@@ -92,66 +92,66 @@ deglist_large = []
 degchange_large = []
 final_stratlist_large = []
 
-m = np.zeros(100)
+m = np.zeros(100)#later used to segregate players who are rich/poor compared to mean population wealth
 
-for m_ctr in range(100):
+for m_ctr in range(100):#loop run over 100 trials
     
-    G = nx.gnp_random_graph(50,0.3)
+    G = nx.gnp_random_graph(50,0.3)#population constructed as random graph: 50 nodes, each pair of nodes connected with probability = 0.3
         
-    nodelist = np.array(G.nodes)
-    wealthlist = np.empty(50)
+    nodelist = np.array(G.nodes)#stores list of all nodes(players) in population
+    wealthlist = np.empty(50)#this will store wealths of each player in the population
     last_stratlist = np.empty(50)
     ind_stratlist = np.zeros([50,nrounds])
     
     for i in range(50):
-        init_deglist[i] = G.degree[i]
+        init_deglist[i] = G.degree[i]#initial degree of each player stored
     
     
     
-    for i in range(50):
-        x = rnd.rand()
+    for i in range(50):#loop iterated over entire population (50 individuals strong)
+        x = rnd.rand()#random number between 0 and 1 generated 
         if(x < 0.5):
-            wealthlist[i] = 3000
+            wealthlist[i] = 3000#initial endowments assigned, 3000 for poor...
         elif(x >= 0.5):
-            wealthlist[i] = 7000
+            wealthlist[i] = 7000#....and 7000 for rich (Initial Gini=0.2), all wealths stored in wealthlist. Other values of initial Gini use different initial endowments.
+    #3 copies of wealthlist created below:
+    temp_wealthlist = wealthlist.copy()#this forms a temporary copy of the wealth distribution
+    wealthlist_g = wealthlist.copy()#this is later used to calculate initial Gini of populaton
+    init_wealthlist = wealthlist.copy()#this stores the intial wealth distribution of the population
+    gini_list[0,m_ctr] = gini(wealthlist_g)#Initial Gini coefficient of population for each trial stored
+    initgini += gini(wealthlist_g)#sum of initial Ginis across 100 trials stored
     
-    temp_wealthlist = wealthlist.copy()
-    wealthlist_g = wealthlist.copy()
-    init_wealthlist = wealthlist.copy()
-    gini_list[0,m_ctr] = gini(wealthlist_g)
-    initgini += gini(wealthlist_g)
-    
-    for i in range(50):
-        nbrlist = np.array(G.adj[i])
-        deg = G.degree[i]
-        x1 = rnd.rand()
-        if(x1<0.7):
-            last_stratlist[i] = 0
-            for j in nbrlist:
-                temp_wealthlist[j] += r*50 
-            temp_wealthlist[i] -= deg*50
-        elif(x1>=0.7):
-            last_stratlist[i] = 1
-        ind_stratlist[i,0] = last_stratlist[i]
+    for i in range(50):#loop iterated over entire population
+        nbrlist = np.array(G.adj[i])#list of neighbours of each player stored
+        deg = G.degree[i]#degree of each player stored
+        x1 = rnd.rand()#random number between 0 and 1 generated
+        if(x1<0.7):#player cooperates with probability = 0.7(first round)
+            last_stratlist[i] = 0#strategy of player stored, 0 corresponds to cooperation
+            for j in nbrlist:#loop iterated over list of neighbours
+                temp_wealthlist[j] += r*50#r*50 monetary units assigned to each neighbour of cooperator
+            temp_wealthlist[i] -= deg*50#cooperating player loses 50 units per connected neighbour 
+        elif(x1>=0.7):#player defects with probability = 0.3
+            last_stratlist[i] = 1#strategy of player stored, 1 corresponds to defection
+        ind_stratlist[i,0] = last_stratlist[i]#strategy adopted by each individual in 1st round stored
             
             
     defsum = 0
     degsum = 0
-    for i in range(50):
-        nbrlist = np.array(G.adj[i])
-        degsum += G.degree[i]
+    for i in range(50):#loop iterated over entire population
+        nbrlist = np.array(G.adj[i])#list of neighbours of each player stored
+        degsum += G.degree[i]#sum of degrees of all players stored
         for k in nbrlist:
-            defsum += last_stratlist[k]
-        if (last_stratlist[i]==0):
+            defsum += last_stratlist[k]#number of defector neighbours of each player summed up
+        if (last_stratlist[i]==0):#if focal player is a cooperator...
             x3 = rnd.rand()
-            if (x3<pc_frac):                
-                for j in nbrlist:
-                    if (last_stratlist[j]==1):
-                        temp_wealthlist[j] -= pun_fine
-                        temp_wealthlist[i] -= pun_cost
-    coopsum = degsum-defsum
-    def_neighbourlist[0,m_ctr] = defsum/50
-    coop_neighbourlist[0,m_ctr] = coopsum/50
+            if (x3<pc_frac):#...it is assigned the ability to punish with a probability = pc_frac                
+                for j in nbrlist:#loop iterated over list of neighbours
+                    if (last_stratlist[j]==1):#if a neighbour is a defector...
+                        temp_wealthlist[j] -= pun_fine#...fine deducted from its wealth
+                        temp_wealthlist[i] -= pun_cost#...cost of punishment deducted from punisher's wealth
+    coopsum = degsum-defsum#sum of degrees - sum of defector neighbours of each player = sum of cooperator neighbours of each player
+    def_neighbourlist[0,m_ctr] = defsum/50#average number of cooperator neighbours
+    coop_neighbourlist[0,m_ctr] = coopsum/50#average number of selfish neighbours
                         
     for i in range(50):
         if (temp_wealthlist[i]<=0):
