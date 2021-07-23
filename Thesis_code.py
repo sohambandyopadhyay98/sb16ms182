@@ -151,15 +151,15 @@ for m_ctr in range(100):#loop run over 100 trials
                         temp_wealthlist[i] -= pun_cost#...cost of punishment deducted from punisher's wealth
     coopsum = degsum-defsum#sum of degrees - sum of defector neighbours of each player = sum of cooperator neighbours of each player
     def_neighbourlist[0,m_ctr] = defsum/50#average number of cooperator neighbours
-    coop_neighbourlist[0,m_ctr] = coopsum/50#average number of selfish neighbours
+    coop_neighbourlist[0,m_ctr] = coopsum/50 #average number of selfish neighbours
                         
-    for i in range(50):
+    for i in range(50): #This loop iterates over entire population
         if (temp_wealthlist[i]<=0):
-            error_count +=1
+            error_count +=1 #Finds the number of instances of individual players having negative wealth
             print("error", error_count)
             print(temp_wealthlist[i])
             if last_stratlist[i]==0:
-                coop_errors +=1
+                coop_errors +=1 #Also finds the number of cooperators and defectors among players with negative wealth.
             elif last_stratlist[i]==1:
                 def_errors +=1
             
@@ -167,23 +167,23 @@ for m_ctr in range(100):#loop run over 100 trials
     p_coop = 0
     r_def = 0
     p_def = 0
-    for i in range(50):
+    for i in range(50): #Loop iterated over entire population
         wealthsum = 0
-        nbrlist = np.array(G.adj[i])
-        deg = G.degree[i]
+        nbrlist = np.array(G.adj[i]) #List of neighbours of focal player computed
+        deg = G.degree[i] #Degree of focal player computed
         for l in nbrlist:
             wealthsum += wealthlist[l]
-        wealth_avg = wealthsum/deg
-        wealth_diff = wealth_avg - wealthlist[i]
-        if(wealth_diff<0) and (last_stratlist[i]==0):
-            r_coop +=1
-            deg_coop[0,m_ctr] += deg
+        wealth_avg = wealthsum/deg #Average wealth of neighbourhood computed
+        wealth_diff = wealth_avg - wealthlist[i] #Value of ∆w computed for focal player
+        if(wealth_diff<0) and (last_stratlist[i]==0): # Depending on strategy and wealth, player assigned as RC, PC, RD or PD
+            r_coop +=1 #Total number of players in each such category computed
+            deg_coop[0,m_ctr] += deg #Total degree of cooperators computed
         elif(wealth_diff>0) and (last_stratlist[i]==0):
             p_coop +=1
             deg_coop[0,m_ctr] += deg
         elif(wealth_diff<0) and (last_stratlist[i]==1):
             r_def +=1
-            deg_def[0,m_ctr] += deg
+            deg_def[0,m_ctr] += deg #Total degree of defectors computed
         elif(wealth_diff>0) and (last_stratlist[i]==1):
             p_def +=1
             deg_def[0,m_ctr] += deg
